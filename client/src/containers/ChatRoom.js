@@ -19,6 +19,7 @@ const ChatRoom = ({ me, displayStatus }) => {
     }
 
     const messageHandler = (msg) => {
+        console.log(msg.data)
         msg = JSON.parse(msg.data);
         if (msg.type === 'CHAT') {
             setMessages(msg.data.messages);
@@ -28,7 +29,7 @@ const ChatRoom = ({ me, displayStatus }) => {
     }
 
     useEffect(() => {
-        server.current = new WebSocket('ws://localhost:8080');
+        server.current = new WebSocket('ws://localhost:4000');
         server.current.onopen = () => {
             console.log('Server connected.');
             server.current.sendEvent({ type: 'CHAT', data: { name: me } });
