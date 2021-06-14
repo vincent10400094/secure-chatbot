@@ -41,8 +41,10 @@ async def reply(client, path):
         
 
 def run_test():
-    print('Server starting at: ' + 'ws://{}:{}'.format('127.0.0.1', 4000))
-    start_server = websockets.serve(reply, host='127.0.0.1', port=4000)
+    serverIP = '140.112.30.34'
+    serverPort = 4000
+    print('Server starting at: ' + 'ws://{}:{}'.format(serverIP, serverPort))
+    start_server = websockets.serve(reply, host=serverIP, port=serverPort)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
 
