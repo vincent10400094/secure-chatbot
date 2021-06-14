@@ -2,7 +2,7 @@ import asyncio
 import websockets
 import json
 
-chatbox = {}
+chatBox = {}
 
 async def reply(client, path):
     async for message in client:
@@ -11,10 +11,10 @@ async def reply(client, path):
         
         replyMessage = {}
         if request['type'] == 'CHAT':
-            if not chatbox.get(chatBoxName):
-                chatbox[chatBoxName] = set([client])
+            if not chatBox.get(chatBoxName):
+                chatBox[chatBoxName] = set([client])
             else:
-                chatbox[chatBoxName].add(client)
+                chatBox[chatBoxName].add(client)
             
             replyMessage = {
                 'type' : 'CHAT',
@@ -36,8 +36,12 @@ async def reply(client, path):
                 }
             }
             replyMessage = json.dumps(replyMessage)
-            for user in chatbox[chatBoxName]:
-                await user.send(replyMessage)
+            users = list(chatBox[chatBoxName])
+            for user in users:
+                try:
+                    await user.send(replyMessage)
+                except websockets.ConnectionClosed:
+                    chatBox[chatBoxName].remove(user)
         
 
 def run_test():
