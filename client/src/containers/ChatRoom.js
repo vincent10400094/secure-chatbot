@@ -5,7 +5,7 @@ import { Input } from "antd";
 
 import ChatModal from './ChatModal';
 
-const ChatRoom = ({ me, displayStatus }) => {
+const ChatRoom = ({ me, isChatBot, displayStatus }) => {
     const [messageInput, setMessageInput] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [messages, _setMessages] = useState([]);
@@ -31,7 +31,7 @@ const ChatRoom = ({ me, displayStatus }) => {
         server.current = new WebSocket('ws://140.112.30.34:4000');
         server.current.onopen = () => {
             console.log('Server connected.');
-            server.current.sendEvent({ type: 'CHAT', data: { name: me } });
+            server.current.sendEvent({ type: 'CHAT', data: { name: me, isChatBot: isChatBot } });
         }
         server.current.onmessage = messageHandler;
         server.current.sendEvent = (msg) => server.current.send(JSON.stringify(msg));
