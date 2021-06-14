@@ -4,10 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { Input } from "antd";
 
 import ChatModal from './ChatModal';
+import AgreementModal from './AgreementModal';
 
 const ChatRoom = ({ me, isChatBot, displayStatus }) => {
     const [messageInput, setMessageInput] = useState("");
-    const [modalVisible, setModalVisible] = useState(false);
+    const [agreementModalVisible, setAgreementModalVisible] = useState(true);
     const [messages, _setMessages] = useState([]);
 
     const messagesRef = useRef(messages);
@@ -40,16 +41,20 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
 
     return (
         <>
-            <ChatModal
+            {/* <ChatModal
                 visible={modalVisible}
-            // onCreate={({ name }) => {
-            //     createChatBox(name, me);
-            //     setModalVisible(false);
-            // }}
-            // onCancel={() => {
-            //     setModalVisible(false);
-            // }}
-            />
+            onCreate={({ name }) => {
+                createChatBox(name, me);
+                setModalVisible(false);
+            }}
+            onCancel={() => {
+                setModalVisible(false);
+            }}
+            /> */}
+            <AgreementModal 
+                visible={agreementModalVisible}
+                setVisible={setAgreementModalVisible}>
+            </AgreementModal>
             <div className="App-title">
                 <h1>{me}'s Chat Room</h1>
             </div>
