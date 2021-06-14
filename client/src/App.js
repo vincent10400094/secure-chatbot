@@ -1,9 +1,9 @@
+import SignIn from './containers/SignIn';
+import ChatRoom from './containers/ChatRoom';
 import "./App.css";
-import { useState, useEffect } from "react";
 
-import SignIn from './containers/SignIn'
-import ChatRoom from './containers/ChatRoom'
-import { message } from "antd";
+import { useState, useEffect } from "react";
+import { message } from "antd";;
 
 const LOCALSTORAGE_KEY = "save-me";
 
@@ -11,6 +11,7 @@ const App = () => {
   const savedMe = localStorage.getItem(LOCALSTORAGE_KEY);
 
   const [signedIn, setSignedIn] = useState(false);
+  const [isChatBot, setIsChatBot] = useState(false);
   const [me, setMe] = useState(savedMe || "");
 
   useEffect(() => {
@@ -40,10 +41,17 @@ const App = () => {
 
   return (
     <div className="App">
-      {signedIn ? (<ChatRoom me={me} displayStatus={displayStatus}/>) : (
+      {signedIn ? 
+      (<ChatRoom 
+        me={me}
+        isChatBot={isChatBot}
+        displayStatus={displayStatus}
+      />) : (
       <SignIn 
         me={me}
         setMe={setMe}
+        isChatBot={isChatBot}
+        setIsChatBot={setIsChatBot}
         setSignedIn={setSignedIn}
         displayStatus={displayStatus}
       />)}
