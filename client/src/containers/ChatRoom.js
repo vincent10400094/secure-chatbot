@@ -6,7 +6,7 @@ import allRegex from '../helpers/guardHelper';
 
 import AgreementModal from './AgreementModal';
 
-const ChatRoom = ({ me, isChatBot, displayStatus }) => {
+const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn }) => {
     const [messageInput, setMessageInput] = useState("");
     const [agreementModalVisible, setAgreementModalVisible] = useState(true);
     const [messages, _setMessages] = useState([]);
@@ -56,7 +56,8 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
         <>
             <AgreementModal
                 visible={agreementModalVisible}
-                setVisible={setAgreementModalVisible}>
+                setVisible={setAgreementModalVisible}
+                setSignedIn={setSignedIn}>
             </AgreementModal>
             <div className="App-title">
                 <h1>{me}'s Chat Room</h1>
