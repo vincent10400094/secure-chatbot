@@ -46,6 +46,7 @@ const App = () => {
         me={me}
         isChatBot={isChatBot}
         displayStatus={displayStatus}
+        setSignedIn={setSignedIn}
       />) : (
       <SignIn 
         me={me}
