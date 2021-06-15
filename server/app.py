@@ -45,7 +45,7 @@ async def reply(client, path):
         
 
 def run_test():
-    serverIP = '140.112.30.34'
+    serverIP = '140.112.30.35'
     serverPort = 4000
     print('Server starting at: ' + 'ws://{}:{}'.format(serverIP, serverPort))
     start_server = websockets.serve(reply, host=serverIP, port=serverPort)

@@ -1,8 +1,9 @@
 import jieba
 from gensim.models import Word2Vec
 import random
+
 model = Word2Vec.load('./word2vec.model')
-def replace(msg, k):
+def replace(msg, k=20):
   msg_list = list(jieba.cut(msg, cut_all=False))
   #print("Default Mode: " + "/ ".join(msg_list))
   ans = []
