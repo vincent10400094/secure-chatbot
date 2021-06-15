@@ -3,7 +3,6 @@ import "../App.css";
 import { useEffect, useState, useRef } from "react";
 import { Input } from "antd";
 
-import ChatModal from './ChatModal';
 import AgreementModal from './AgreementModal';
 
 const ChatRoom = ({ me, isChatBot, displayStatus }) => {
@@ -14,7 +13,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
     const messagesRef = useRef(messages);
     const server = useRef();
 
-    const setMessages = msgs => {
+    const setMessages = (msgs) => {
         messagesRef.current = msgs;
         _setMessages(msgs);
     }
@@ -40,16 +39,6 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
 
     return (
         <>
-            {/* <ChatModal
-                visible={modalVisible}
-            onCreate={({ name }) => {
-                createChatBox(name, me);
-                setModalVisible(false);
-            }}
-            onCancel={() => {
-                setModalVisible(false);
-            }}
-            /> */}
             <AgreementModal 
                 visible={agreementModalVisible}
                 setVisible={setAgreementModalVisible}>
