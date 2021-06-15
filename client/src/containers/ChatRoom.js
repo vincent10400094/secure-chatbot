@@ -1,7 +1,8 @@
 import "../App.css";
 
 import { useEffect, useState, useRef } from "react";
-import { Input } from "antd";
+import { Input, Popconfirm } from "antd";
+import allRegex from '../helpers/guardHelper';
 
 import AgreementModal from './AgreementModal';
 
@@ -9,9 +10,12 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
     const [messageInput, setMessageInput] = useState("");
     const [agreementModalVisible, setAgreementModalVisible] = useState(true);
     const [messages, _setMessages] = useState([]);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const messagesRef = useRef(messages);
     const server = useRef();
+    const buttonRef = useRef(null);
+    const inputRef = useRef(null);
 
     const setMessages = (msgs) => {
         messagesRef.current = msgs;
@@ -27,6 +31,17 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
         }
     }
 
+    const sendMessage = () => {
+        server.current.sendEvent({
+            type: 'MESSAGE',
+            data: {
+                name: me,
+                body: messageInput,
+            },
+        });
+        setMessageInput("");
+    }
+
     useEffect(() => {
         server.current = new WebSocket('ws://140.112.30.34:4000');
         server.current.onopen = () => {
@@ -39,7 +54,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
 
     return (
         <>
-            <AgreementModal 
+            <AgreementModal
                 visible={agreementModalVisible}
                 setVisible={setAgreementModalVisible}>
             </AgreementModal>
@@ -61,11 +76,21 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
                     ))
                 }
             </div>
+            <Popconfirm
+                title={alertMessage}
+                placement="topLeft"
+                onConfirm={ () => sendMessage() }
+                okText="Send"
+                cancelText="Cancel"
+            >
+                <a href="#" ref={buttonRef} id={'fuck'}></a>
+            </Popconfirm>
             <Input.Search
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 enterButton="Send"
                 placeholder="Enter message here..."
+                ref={inputRef}
                 onSearch={(msg) => {
                     if (!msg) {
                         displayStatus({
@@ -74,14 +99,21 @@ const ChatRoom = ({ me, isChatBot, displayStatus }) => {
                         });
                         return;
                     }
-                    server.current.sendEvent({
-                        type: 'MESSAGE',
-                        data: {
-                            name: me,
-                            body: msg,
-                        },
-                    });
-                    setMessageInput("");
+                    /* Check whether the message contains sensitive info */
+                    let matches = [];
+                    for (let regex of allRegex) {
+                        let result = regex.exec(msg);
+                        if (result)
+                            matches.push(result[0]);
+                    }
+                    console.log(matches);
+                    /* there's sensitive information */
+                    if (matches.length) {
+                        setAlertMessage(`Sensitive information detected: ${matches.join()}`);
+                        buttonRef.current.click();
+                        return;
+                    }
+                    sendMessage();
                 }}
             ></Input.Search>
         </>);
