@@ -30,7 +30,7 @@ async def reply(client, path):
                     'type' : 'CHAT',
                     'data' : {
                         'messages': [],
-                        'filters' : request['data']['filters']
+                        'filters' : reservePII
                     }
                 }
                 replyMessage = json.dumps(replyMessage)
@@ -40,7 +40,7 @@ async def reply(client, path):
                     'type' : 'CHAT',
                     'data' : {
                         'messages': [],
-                        'filters' : []
+                        'filters' : reservePII
                     }
                 }
                 replyMessage = json.dumps(replyMessage)
