@@ -5,7 +5,7 @@ import { useState } from 'react';
 import "../App.css";
 import SelectFilterModal from './SelectFilterModal';
 
-const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus, setFilters }) => {
+const SignIn = ({ me, setMe, isChatBot, setIsChatBot, setSignedIn, displayStatus, setFilters }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -33,7 +33,7 @@ const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus, setFilter
             onSearch={(name) => {
                 if (!name) {
                     displayStatus({ type: 'error', msg: 'Missing user name' });
-                } else if (setIsChatBot) {
+                } else if (isChatBot) {
                     setModalVisible(true);
                 } else {
                     setSignedIn(true);

@@ -1,8 +1,14 @@
 import asyncio
 import websockets
 import json
+from aws_comprehend import getPII
+import boto3
 
 chatBox = {}
+chatBotList = []
+reservePII = []
+comprehend = boto3.client(service_name='comprehend')
+
 
 async def reply(client, path):
     async for message in client:
@@ -12,18 +18,33 @@ async def reply(client, path):
         replyMessage = {}
         if request['type'] == 'CHAT':
             if not chatBox.get(chatBoxName):
-                chatBox[chatBoxName] = set([client])
+                chatBox[chatBoxName] = set([(client, request['data']['isChatBot'])])
             else:
-                chatBox[chatBoxName].add(client)
+                chatBox[chatBoxName].add((client, request['data']['isChatBot']))
             
-            replyMessage = {
-                'type' : 'CHAT',
-                'data' : {
-                    'messages': []
+            if request['data']['isChatBot']:
+                chatBotList.append(request['data']['name'])
+                global reservePII
+                reservePII = request['data']['filters']
+                replyMessage = {
+                    'type' : 'CHAT',
+                    'data' : {
+                        'messages': [],
+                        'filters' : request['data']['filters']
+                    }
                 }
-            }
-            replyMessage = json.dumps(replyMessage)
-            await client.send(replyMessage)
+                replyMessage = json.dumps(replyMessage)
+                await client.send(replyMessage)
+            else:
+                replyMessage = {
+                    'type' : 'CHAT',
+                    'data' : {
+                        'messages': [],
+                        'filters' : []
+                    }
+                }
+                replyMessage = json.dumps(replyMessage)
+                await client.send(replyMessage)
         
         elif request['type'] == 'MESSAGE':
             replyMessage = {
@@ -35,11 +56,45 @@ async def reply(client, path):
                     }
                 }
             }
-            replyMessage = json.dumps(replyMessage)
+            
+            cleanMessage_ = ''
+            echoText_ = ''
+            replyMessage_ = json.dumps(replyMessage)
             users = list(chatBox[chatBoxName])
+            
+            if len(chatBotList) > 0:
+                if replyMessage['data']['message']['name'] not in chatBotList:
+                    text = request['data']['body']
+                    entities = getPII(comprehend, text)['Entities']
+                    for entity in entities:
+                        if entity['Type'] not in reservePII:
+                            text = text[:entity['BeginOffset']] + '*' * (entity['EndOffset'] - entity['BeginOffset']) + text[entity['EndOffset']:]
+                    replyMessage['data']['message']['body'] = text
+                    echoText_ = text
+                    cleanMessage_ = json.dumps(replyMessage)
+                else:
+                    cleanMessage_ = json.dumps(replyMessage)
+
             for user in users:
                 try:
-                    await user.send(replyMessage)
+                    if user[1]:
+                        await user[0].send(cleanMessage_)
+                    
+                    else:
+                        await user[0].send(replyMessage_)
+                        for chatBot in chatBotList:
+                            echo = {
+                                'type' : 'MESSAGE',
+                                'data' : {
+                                    'message': {
+                                        'name' : chatBot,
+                                        'body' : f"[Message {chatBot} actually saw] : " + echoText_
+                                    }
+                                }
+                            }
+                            echo = json.dumps(echo)
+                            await user[0].send(echo)
+                
                 except websockets.ConnectionClosed:
                     chatBox[chatBoxName].remove(user)
         
