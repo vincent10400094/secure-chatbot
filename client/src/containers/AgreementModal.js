@@ -1,6 +1,6 @@
 import { Modal } from "antd";
 
-const AgreementModal = ({ visible, setVisible, setSignedIn }) => {
+const AgreementModal = ({ visible, setVisible, setSignedIn, filterWhitelist }) => {
     return (
         <Modal
             visible={visible}
@@ -13,10 +13,11 @@ const AgreementModal = ({ visible, setVisible, setSignedIn }) => {
             onOk={() => setVisible(false) }
         >
             <div>
-                <p>Some text</p>
+                <p>All PII will be filtered out by our server, except for the following:</p>
                 <ul style={{marginLeft: '20px'}}>
-                    <li>item 1</li>
-                    <li>item 2</li>
+                    {filterWhitelist.map(filter => (
+                        <li>{filter}</li>
+                    ))}
                 </ul>
             </div>
         </Modal>

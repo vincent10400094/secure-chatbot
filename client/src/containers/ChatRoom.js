@@ -8,14 +8,16 @@ import AgreementModal from './AgreementModal';
 
 const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
     const [messageInput, setMessageInput] = useState("");
-    const [agreementModalVisible, setAgreementModalVisible] = useState(!isChatBot);
+    const [agreementModalVisible, setAgreementModalVisible] = useState(false);
     const [messages, _setMessages] = useState([]);
     const [alertMessage, setAlertMessage] = useState("");
+    const [filterWhitelist, setFilterWhitelist] = useState([]);
 
     const messagesRef = useRef(messages);
     const server = useRef();
     const buttonRef = useRef(null);
     const inputRef = useRef(null);
+    const dummyRef = useRef(null);
 
     const setMessages = (msgs) => {
         messagesRef.current = msgs;
@@ -24,10 +26,14 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
 
     const messageHandler = (msg) => {
         msg = JSON.parse(msg.data);
-        if (msg.type === 'CHAT') {
-            setMessages(msg.data.messages);
+        if (msg.type === 'CHAT' && !isChatBot) {
+            console.log(msg);
+            setAgreementModalVisible(true);
+            setFilterWhitelist(msg.data.filters);
+            // setMessages(msg.data.messages);
         } else if (msg.type === 'MESSAGE') {
             setMessages([...messagesRef.current, msg.data.message]);
+            dummyRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }
 
@@ -64,12 +70,13 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
             <AgreementModal
                 visible={agreementModalVisible}
                 setVisible={setAgreementModalVisible}
-                setSignedIn={setSignedIn}>
+                setSignedIn={setSignedIn}
+                filterWhitelist={filterWhitelist}>
             </AgreementModal>
             <div className="App-title">
                 <h1>{me}'s Chat Room</h1>
             </div>
-            <div className="App-messages">
+            <div className="App-messages" style={{overflow: 'scroll'}}>
                 {
                     messages.map((msg, i) => (
                         msg.name === me ?
@@ -83,6 +90,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
                             </div>
                     ))
                 }
+                <div ref={dummyRef}></div>
             </div>
             <Popconfirm
                 title={alertMessage}
@@ -114,7 +122,6 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
                         if (result)
                             matches.push(result[0]);
                     }
-                    console.log(matches);
                     /* there's sensitive information */
                     if (matches.length) {
                         setAlertMessage(`Sensitive information detected: ${matches.join()}`);
