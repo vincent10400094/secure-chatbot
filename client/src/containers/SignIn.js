@@ -1,9 +1,13 @@
 import { Input, Checkbox } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { useState } from 'react';
 
 import "../App.css";
+import SelectFilterModal from './SelectFilterModal';
 
-const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus }) => {
+const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus, setFilters }) => {
+
+    const [modalVisible, setModalVisible] = useState(false);
 
     function onChange(e) {
         console.log(`checked = ${e.target.checked}`);
@@ -11,7 +15,13 @@ const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus }) => {
     }
 
     return (<>
-        <div className="App-title"><h1>My Chat Room</h1></div>
+        <div className="App-title"><h1>Join Chat Room</h1></div>
+        <SelectFilterModal
+            visible={modalVisible}
+            setVisible={setModalVisible}
+            setSignedIn={setSignedIn}
+            setFilters={setFilters}>
+        </SelectFilterModal>
         <Input.Search
             prefix={<UserOutlined />}
             value={me}
@@ -21,10 +31,13 @@ const SignIn = ({ me, setMe, setIsChatBot, setSignedIn, displayStatus }) => {
             size="large"
             style={{ width: 300, margin: 50 }}
             onSearch={(name) => {
-                if (!name)
+                if (!name) {
                     displayStatus({ type: 'error', msg: 'Missing user name' });
-                else
+                } else if (setIsChatBot) {
+                    setModalVisible(true);
+                } else {
                     setSignedIn(true);
+                }
             }}
         ></Input.Search>
         <div>

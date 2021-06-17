@@ -6,9 +6,9 @@ import allRegex from '../helpers/guardHelper';
 
 import AgreementModal from './AgreementModal';
 
-const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn }) => {
+const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
     const [messageInput, setMessageInput] = useState("");
-    const [agreementModalVisible, setAgreementModalVisible] = useState(true);
+    const [agreementModalVisible, setAgreementModalVisible] = useState(!isChatBot);
     const [messages, _setMessages] = useState([]);
     const [alertMessage, setAlertMessage] = useState("");
 
@@ -46,7 +46,14 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn }) => {
         server.current = new WebSocket('ws://140.112.30.35:4000');
         server.current.onopen = () => {
             console.log('Server connected.');
-            server.current.sendEvent({ type: 'CHAT', data: { name: me, isChatBot: isChatBot } });
+            server.current.sendEvent({
+                type: 'CHAT', 
+                data: { 
+                    name: me, 
+                    isChatBot: isChatBot,
+                    filters: filters,
+                },
+            });
         }
         server.current.onmessage = messageHandler;
         server.current.sendEvent = (msg) => server.current.send(JSON.stringify(msg));

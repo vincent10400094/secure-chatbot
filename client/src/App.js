@@ -13,6 +13,7 @@ const App = () => {
   const [signedIn, setSignedIn] = useState(false);
   const [isChatBot, setIsChatBot] = useState(false);
   const [me, setMe] = useState(savedMe || "");
+  const [filters, setFilters] = useState([]);
 
   useEffect(() => {
     if (signedIn) {
@@ -47,6 +48,7 @@ const App = () => {
         isChatBot={isChatBot}
         displayStatus={displayStatus}
         setSignedIn={setSignedIn}
+        filters={filters}
       />) : (
       <SignIn 
         me={me}
@@ -54,6 +56,7 @@ const App = () => {
         isChatBot={isChatBot}
         setIsChatBot={setIsChatBot}
         setSignedIn={setSignedIn}
+        setFilters={setFilters}
         displayStatus={displayStatus}
       />)}
     </div>);
