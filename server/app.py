@@ -5,8 +5,8 @@ from aws_comprehend import getPII
 import boto3
 
 chatBox = {}
-chatBotList = []
-reservePII = []
+chatBotList = {}
+# reservePII = []
 comprehend = boto3.client(service_name='comprehend')
 
 
@@ -14,38 +14,61 @@ async def reply(client, path):
     async for message in client:
         request = json.loads(message)
         chatBoxName = 'test'
-        
+        try:
+            chatBoxName = request['data']['token']
+        except KeyError:
+            chatBoxName = 'test'
+
         replyMessage = {}
         if request['type'] == 'CHAT':
-            if not chatBox.get(chatBoxName):
-                chatBox[chatBoxName] = set([(client, request['data']['isChatBot'])])
+            if request['data']['isChatBot'] and chatBotList.get(chatBoxName):
+                replyMessage = {
+                    'type' : 'ERROR',
+                    'data' : {
+                        'msg' : 'One chatbox can only have one chatbot!'
+                    }
+                }
+                replyMessage = json.dumps(replyMessage)
+                await client.send(replyMessage)
             else:
-                chatBox[chatBoxName].add((client, request['data']['isChatBot']))
+                if not chatBox.get(chatBoxName):
+                    chatBox[chatBoxName] = set([(client, request['data']['isChatBot'])])
+                else:
+                    chatBox[chatBoxName].add((client, request['data']['isChatBot']))
+                
+                if request['data']['isChatBot']:
+                    chatBotList[chatBoxName] = {'chatBotName' : request['data']['name'], 'reservePII': request['data']['filters']}
+                    reservePII = request['data']['filters']
+                    replyMessage = {
+                        'type' : 'CHAT',
+                        'data' : {
+                            'messages': [],
+                            'filters' : reservePII
+                        }
+                    }
+                    replyMessage = json.dumps(replyMessage)
+                    await client.send(replyMessage)
+                else:
+                    if chatBotList.get(chatBoxName):
+                        reservePII = chatBotList[chatBoxName]['reservePII']
+                        replyMessage = {
+                            'type' : 'CHAT',
+                            'data' : {
+                                'messages': [],
+                                'filters' : reservePII
+                            }
+                        }
+                    else:
+                        replyMessage = {
+                            'type' : 'CHAT',
+                            'data' : {
+                                'messages': [],
+                                'filters' : []
+                            }
+                        }
+                    replyMessage = json.dumps(replyMessage)
+                    await client.send(replyMessage)
             
-            if request['data']['isChatBot']:
-                chatBotList.append(request['data']['name'])
-                global reservePII
-                reservePII = request['data']['filters']
-                replyMessage = {
-                    'type' : 'CHAT',
-                    'data' : {
-                        'messages': [],
-                        'filters' : reservePII
-                    }
-                }
-                replyMessage = json.dumps(replyMessage)
-                await client.send(replyMessage)
-            else:
-                replyMessage = {
-                    'type' : 'CHAT',
-                    'data' : {
-                        'messages': [],
-                        'filters' : reservePII
-                    }
-                }
-                replyMessage = json.dumps(replyMessage)
-                await client.send(replyMessage)
-        
         elif request['type'] == 'MESSAGE':
             replyMessage = {
                 'type' : 'MESSAGE',
@@ -62,18 +85,15 @@ async def reply(client, path):
             replyMessage_ = json.dumps(replyMessage)
             users = list(chatBox[chatBoxName])
             
-            if len(chatBotList) > 0:
-                if replyMessage['data']['message']['name'] not in chatBotList:
-                    text = request['data']['body']
-                    entities = getPII(comprehend, text)['Entities']
-                    for entity in entities:
-                        if entity['Type'] not in reservePII:
-                            text = text[:entity['BeginOffset']] + '*' * (entity['EndOffset'] - entity['BeginOffset']) + text[entity['EndOffset']:]
-                    replyMessage['data']['message']['body'] = text
-                    echoText_ = text
-                    cleanMessage_ = json.dumps(replyMessage)
-                else:
-                    cleanMessage_ = json.dumps(replyMessage)
+            if chatBotList.get(chatBoxName):
+                text = request['data']['body']
+                entities = getPII(comprehend, text)['Entities']
+                for entity in entities:
+                    if entity['Type'] not in chatBotList[chatBoxName]['reservePII']:
+                        text = text[:entity['BeginOffset']] + '*' * (entity['EndOffset'] - entity['BeginOffset']) + text[entity['EndOffset']:]
+                replyMessage['data']['message']['body'] = text
+                echoText_ = text
+                cleanMessage_ = json.dumps(replyMessage)
 
             for user in users:
                 try:
@@ -82,7 +102,8 @@ async def reply(client, path):
                     
                     else:
                         await user[0].send(replyMessage_)
-                        for chatBot in chatBotList:
+                        if (chatBotList.get(chatBoxName)):
+                            chatBot = chatBotList[chatBoxName]['chatBotName']
                             echo = {
                                 'type' : 'MESSAGE',
                                 'data' : {
