@@ -13,6 +13,7 @@ const App = () => {
   const [signedIn, setSignedIn] = useState(false);
   const [isChatBot, setIsChatBot] = useState(false);
   const [me, setMe] = useState(savedMe || "");
+  const [token, setToken] = useState("");
   const [filters, setFilters] = useState([]);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const App = () => {
       const {type, msg} = payload;
       const content = {
         content: msg,
-        duration: 0.5
+        duration: 2.0,
       }
       switch (type){
         case 'success':
@@ -44,6 +45,7 @@ const App = () => {
     <div className="App">
       {signedIn ? 
       (<ChatRoom 
+        token={token}
         me={me}
         isChatBot={isChatBot}
         displayStatus={displayStatus}
@@ -51,6 +53,8 @@ const App = () => {
         filters={filters}
       />) : (
       <SignIn 
+        token={token}
+        setToken={setToken}
         me={me}
         setMe={setMe}
         isChatBot={isChatBot}

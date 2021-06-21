@@ -5,7 +5,7 @@ import { useState } from 'react';
 import "../App.css";
 import SelectFilterModal from './SelectFilterModal';
 
-const SignIn = ({ me, setMe, isChatBot, setIsChatBot, setSignedIn, displayStatus, setFilters }) => {
+const SignIn = ({ token, setToken, me, setMe, isChatBot, setIsChatBot, setSignedIn, displayStatus, setFilters }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -22,14 +22,21 @@ const SignIn = ({ me, setMe, isChatBot, setIsChatBot, setSignedIn, displayStatus
             setSignedIn={setSignedIn}
             setFilters={setFilters}>
         </SelectFilterModal>
+        <Input
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder="Enter room token"
+            style={{ width: 300, marginTop: 50, marginBottom: 10 }}
+        >
+        </Input>
         <Input.Search
             prefix={<UserOutlined />}
             value={me}
-            enterButton="Sign In"
+            enterButton="Join"
             onChange={(e) => setMe(e.target.value)}
             placeholder="Enter your name"
             size="large"
-            style={{ width: 300, margin: 50 }}
+            style={{ width: 300, marginTop: 10, marginBottom: 50 }}
             onSearch={(name) => {
                 if (!name) {
                     displayStatus({ type: 'error', msg: 'Missing user name' });

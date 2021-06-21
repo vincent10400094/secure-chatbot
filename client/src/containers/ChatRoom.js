@@ -6,7 +6,7 @@ import allRegex from '../helpers/guardHelper';
 
 import AgreementModal from './AgreementModal';
 
-const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
+const ChatRoom = ({ token, me, isChatBot, displayStatus, setSignedIn, filters }) => {
     const [messageInput, setMessageInput] = useState("");
     const [agreementModalVisible, setAgreementModalVisible] = useState(false);
     const [messages, _setMessages] = useState([]);
@@ -26,14 +26,17 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
 
     const messageHandler = (msg) => {
         msg = JSON.parse(msg.data);
+        console.log(msg);
         if (msg.type === 'CHAT' && !isChatBot) {
-            console.log(msg);
             setAgreementModalVisible(true);
             setFilterWhitelist(msg.data.filters);
             // setMessages(msg.data.messages);
         } else if (msg.type === 'MESSAGE') {
             setMessages([...messagesRef.current, msg.data.message]);
             dummyRef.current.scrollIntoView({ behavior: "smooth" });
+        } else if (msg.type === 'ERROR') {
+            displayStatus({ type: 'error', msg: msg.data.msg });
+            setSignedIn(false);
         }
     }
 
@@ -43,6 +46,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
             data: {
                 name: me,
                 body: messageInput,
+                token: token,
             },
         });
         setMessageInput("");
@@ -58,6 +62,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
                     name: me, 
                     isChatBot: isChatBot,
                     filters: filters,
+                    token: token,
                 },
             });
         }
@@ -74,7 +79,7 @@ const ChatRoom = ({ me, isChatBot, displayStatus, setSignedIn, filters }) => {
                 filterWhitelist={filterWhitelist}>
             </AgreementModal>
             <div className="App-title">
-                <h1>{me}'s Chat Room</h1>
+                <h2>Chat Token: <code>{token}</code></h2>
             </div>
             <div className="App-messages" style={{overflow: 'scroll'}}>
                 {
